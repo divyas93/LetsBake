@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Let\'s Bake</string>
+    <string name="title_activity_recipe_detail">RecipeDetailActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ingredients">INGREDIENTS</string>
+    <string name="recipe_ingredients">Recipe Ingredients</string>
+    <string name="recipe_steps">Recipe Steps</string>
+    <string name="recipe_details">Recipe Details</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
+    <string name="progressMessage">Please wait while we are fetching recipes.</string>
+    <string name="errorString">Something went wrong. Please try again later.</string>
+    <string name="networkErrorString">Something went wrong, couldn\'t load recipes. Please check your network settings or try again later.</string>
+</resources>
