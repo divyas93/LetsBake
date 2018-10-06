@@ -61,7 +61,9 @@ public class BakingAppUiTest {
         EspressoUtils.clickOnRecyclerView(R.id.recipesRecyclerView, 0);
         EspressoUtils.waitForViewUsingIdlingResource(R.id.recipeIngredientsLabel);
         EspressoUtils.clickOnRecyclerView(R.id.recipeDetailRecylerView, 0);
-        EspressoUtils.checkIsDisplayedWithText(mainActivityActiveTestRule.getActivity().getString(R.string.recipe_steps));
+        EspressoUtils.waitForViewUsingIdlingResource(R.id.stepDesc);
+//        EspressoUtils.checkIsDisplayedWithText(mainActivityActiveTestRule.getActivity().getString(R.string.recipe_steps));
+//        EspressoUtils.checkIsDisplayedWithText(R.id.action_bar, R.string.recipe_steps);
         EspressoUtils.checkIsDisplayed(R.id.stepDesc);
         EspressoUtils.checkIsDisplayed(R.id.rightButton);
     }

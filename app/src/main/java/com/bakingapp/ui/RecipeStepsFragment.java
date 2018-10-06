@@ -10,14 +10,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bakingapp.AppConstants;
+import com.bakingapp.POJO.RecipeSteps;
+import com.bakingapp.R;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -29,20 +27,15 @@ import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
-import com.bakingapp.AppConstants;
-import com.bakingapp.POJO.RecipeSteps;
-import com.bakingapp.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,10 +51,9 @@ public class RecipeStepsFragment extends Fragment {
     private ImageView imageView;
     private TextView stepsDesc;
     private SimpleExoPlayerView simpleExoPlayerView;
-    private SimpleExoPlayer simpleExoPlayer;
-    //    private ProgressBar exoplayerProgressBar;
+    private static SimpleExoPlayer simpleExoPlayer;
     private boolean playerInitialised;
-    private boolean isPlaying = true;
+    private static boolean isPlaying = true;
     private boolean isOnPaused = false;
     private static long position;
     private ImageView prev;
@@ -116,6 +108,7 @@ public class RecipeStepsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_recipe_steps, container, false);
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -147,7 +140,6 @@ public class RecipeStepsFragment extends Fragment {
 
         } else {
             simpleExoPlayerView.setVisibility(View.GONE);
-//            exoplayerProgressBar.setVisibility(View.GONE);
             imageView.setVisibility(View.VISIBLE);
 
         }
@@ -190,75 +182,80 @@ public class RecipeStepsFragment extends Fragment {
     private void setupExoPlayer(Uri mediaUri) {
         simpleExoPlayerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(), R.drawable.loadvideo));
         initializePlayer(mediaUri);
-        simpleExoPlayer.addListener(new ExoPlayer.EventListener() {
-            @Override
-            public void onTimelineChanged(Timeline timeline, Object manifest) {
+        if (simpleExoPlayer != null) {
+            simpleExoPlayer.addListener(new ExoPlayer.EventListener() {
+                @Override
+                public void onTimelineChanged(Timeline timeline, Object manifest) {
 
-            }
+                }
 
-            @Override
-            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+                @Override
+                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
 
-            }
+                }
 
-            @Override
-            public void onLoadingChanged(boolean isLoading) {
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
 
-            }
+                }
 
-            @Override
-            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
 //                if (playbackState == ExoPlayer.STATE_BUFFERING) {
 ////                    exoplayerProgressBar.setVisibility(View.VISIBLE);
 //                } else {
 //                    exoplayerProgressBar.setVisibility(View.INVISIBLE);
 //                }
 
-                if (playbackState == ExoPlayer.STATE_ENDED) {
-                    simpleExoPlayerView.getPlayer().seekTo(0);
-                    simpleExoPlayer.setPlayWhenReady(false);
-                }
-                if (playWhenReady && playbackState == simpleExoPlayer.STATE_READY) {
-                    isPlaying = true;
-                } else {
-                    // player paused in any state
-                    if (!isOnPaused) {
-                        isPlaying = !isPlaying;
+                    if (playbackState == simpleExoPlayer.STATE_ENDED) {
+                        simpleExoPlayerView.getPlayer().seekTo(0);
+                        isPlaying = false;
+                        simpleExoPlayer.setPlayWhenReady(isPlaying);
                     }
+                    if (playWhenReady && playbackState == simpleExoPlayer.STATE_READY) {
+                        isPlaying = true;
+                    } else {
+                        // player paused in any state
+                        if (!isOnPaused) {
+                            isPlaying = !isPlaying;
+                        }
+                    }
+//                    if (playbackState == simpleExoPlayer.STATE_ENDED) {
+//                        isPlaying = false;
+//                        simpleExoPlayer.setPlayWhenReady(isPlaying);
+//                    }
                 }
-                if (playbackState == simpleExoPlayer.STATE_ENDED) {
-                    isPlaying = false;
-                    simpleExoPlayer.setPlayWhenReady(isPlaying);
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+
                 }
-            }
 
-            @Override
-            public void onPlayerError(ExoPlaybackException error) {
+                @Override
+                public void onPositionDiscontinuity() {
 
-            }
-
-            @Override
-            public void onPositionDiscontinuity() {
-
-            }
-        });
+                }
+            });
+        }
     }
 
     private void initializePlayer(Uri mediaUri) {
-        TrackSelector trackSelector = new DefaultTrackSelector();
-        LoadControl loadControl = new DefaultLoadControl();
-        simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
-        simpleExoPlayerView.setPlayer(simpleExoPlayer);
-        String userAgent = Util.getUserAgent(getContext(), "letsbake");
-        MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(getContext(), userAgent),
-                new DefaultExtractorsFactory(), null, null);
-        simpleExoPlayer.prepare(mediaSource);
+        if (simpleExoPlayer == null) {
+            TrackSelector trackSelector = new DefaultTrackSelector();
+            LoadControl loadControl = new DefaultLoadControl();
+            simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
+            simpleExoPlayerView.setPlayer(simpleExoPlayer);
+            String userAgent = Util.getUserAgent(getContext(), "letsbake");
+            MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(getContext(), userAgent),
+                    new DefaultExtractorsFactory(), null, null);
+            simpleExoPlayer.prepare(mediaSource);
 
-        if (position > 0l) {
-            simpleExoPlayer.seekTo(position);
+            if (position > 0l) {
+                simpleExoPlayer.seekTo(position);
+            }
+            playerInitialised = true;
+            simpleExoPlayer.setPlayWhenReady(true);
         }
-        playerInitialised = true;
-        simpleExoPlayer.setPlayWhenReady(true);
     }
 
     private void releasePlayer() {
@@ -270,8 +267,8 @@ public class RecipeStepsFragment extends Fragment {
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onDestroy() {
+        super.onDestroy();
         releasePlayer();
         mListener = null;
     }
@@ -312,13 +309,12 @@ public class RecipeStepsFragment extends Fragment {
         if (simpleExoPlayer != null) {
             simpleExoPlayer.getCurrentPosition();
             isOnPaused = true;
-            isPlaying = false;
-            simpleExoPlayer.setPlayWhenReady(isPlaying);
+//            isPlaying = false;
+            simpleExoPlayer.setPlayWhenReady(false);
 
         }
-        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+//        getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
     }
-
 
     @Override
     public void onResume() {
@@ -342,15 +338,15 @@ public class RecipeStepsFragment extends Fragment {
         hideNexButton = visibility;
     }
 
-    @Override
-    public void onDestroyView()
-    {
-        if (simpleExoPlayer != null)
-        {
-            position = simpleExoPlayer.getCurrentPosition();
-        }
-        super.onDestroyView();
-    }
+//    @Override
+//    public void onDestroyView()
+//    {
+//        if (simpleExoPlayer != null)
+//        {
+//            position = simpleExoPlayer.getCurrentPosition();
+//        }
+//        super.onDestroyView();
+//    }
 
 
 }
